@@ -1297,6 +1297,7 @@ tf_kernel_library(
         ":kafka_dataset_op",
         ":window_dataset_op",
         ":zip_dataset_op",
+	":arrow_ops",
         "//tensorflow/core:array_ops_op_lib",
         "//tensorflow/core:nn_ops_op_lib",
         "//tensorflow/core/kernels/data/experimental:dataset_kernels",
@@ -1364,4 +1365,43 @@ tf_kernel_library(
         "//tensorflow/core:lib",
         "//tensorflow/core:lib_internal",
     ],
+)
+
+cc_library(
+    name = "arrow_ops",
+    srcs = [
+        "arrow_dataset_ops.cc",
+        "arrow_kernels.cc",
+        "arrow_kernels.h",
+        "arrow_stream_client.h",
+        "arrow_ops.cc",
+    ] + select({
+        "@bazel_tools//src/conditions:windows": [
+            "arrow_stream_client_windows.cc",
+        ],
+        "//conditions:default": [
+            "arrow_stream_client_unix.cc",
+        ],
+    }),
+    hdrs = ["io_stream.h",
+	    "io_interface.h",],
+    linkstatic = True,
+    deps = [
+        ":arrow_util",
+        ":dataset_ops",
+        "@arrow",
+    ],
+    alwayslink = 1,
+)
+
+cc_library(
+    name = "arrow_util",
+    srcs = ["arrow_util.cc"],
+    hdrs = ["arrow_util.h"],
+    linkstatic = True,
+    deps = [
+        ":dataset_ops",
+        "@arrow",
+    ],
+    alwayslink = 1,
 )
