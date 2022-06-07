@@ -106,7 +106,9 @@ ResourceMgr::ResourceAndName::ResourceAndName(
   name = std::move(other.name);
 }
 
-ResourceMgr::ResourceAndName::~ResourceAndName() {}
+ResourceMgr::ResourceAndName::~ResourceAndName() {
+  LOG(INFO) << "ResourceAndName, destructor, name:" << name;
+}
 
 ResourceMgr::ResourceAndName& ResourceMgr::ResourceAndName::operator=(
     ResourceAndName&& other) noexcept {

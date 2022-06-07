@@ -282,8 +282,10 @@ class EmbeddingVar : public ResourceBase {
   EmbeddingFilter<K, V, EmbeddingVar<K, V>>* filter_;
 
   ~EmbeddingVar() override {
+    LOG(INFO) << "EmbeddingVar destructor, name:" << name;
     // When dynamic dimension embedding is used, there will be more than one primary slot
     if (emb_config_.is_primary() && emb_config_.primary_emb_index == 0) {
+      LOG(INFO) << "Destroy";
       Destroy();
       delete storage_manager_;
     }

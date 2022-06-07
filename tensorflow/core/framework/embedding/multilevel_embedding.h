@@ -65,6 +65,7 @@ class StorageManager {
     }
     delete eviction_thread_;
     for (auto kv: kvs_) {
+      LOG(INFO) << "Storage Manager, name:" << name << ", delete hashtable";
       delete kv.first;
     }
     delete cache_;
@@ -203,8 +204,6 @@ class StorageManager {
                           " Storage Path: ", sc_.path,
                           " Storage Capacity: ", sc_.size);
   }
-
-
 
   void Schedule(std::function<void()> fn) {
     if (hash_table_count_ > 1) {
