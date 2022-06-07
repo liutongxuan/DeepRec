@@ -81,8 +81,6 @@ AdagradDecay-Optimizer
 Operator-Optimization
 NVIDIA-TF32
 oneDNN
-PMEM
-Embedding-on-PMEM
 ```
 
 ```{toctree}
