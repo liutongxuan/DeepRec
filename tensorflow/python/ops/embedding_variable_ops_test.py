@@ -366,9 +366,7 @@ class EmbeddingVariableTest(test_util.TensorFlowTestCase):
     var = variable_scope.get_embedding_variable("var_1",
             embedding_dim = 3,
             initializer=init_ops.ones_initializer(dtypes.float32),
-            partitioner=partitioned_variables.fixed_size_partitioner(num_shards=4),
-            ev_option = variables.EmbeddingVariableOption(storage_option=variables.StorageOption(storage_type=config_pb2.StorageType.DRAM_LEVELDB,
-                                                                                                 storage_path='/tmp/leveldb/')))
+            partitioner=partitioned_variables.fixed_size_partitioner(num_shards=4))
     emb = embedding_ops.embedding_lookup(var, math_ops.cast([0,1,2,5,6,7], dtypes.int64))
     saver = saver_module.Saver(sharded=True)
     init = variables.global_variables_initializer()
@@ -1838,12 +1836,13 @@ class EmbeddingVariableTest(test_util.TensorFlowTestCase):
           self.assertEqual(ckpt_value.tolist()[2], 2)
 
 
-  def testEmbeddingVariableForL2FeatureEvictionDRAM(self):
-    print("testEmbeddingVariableForL2FeatureEvictionDRAM")
+  def testEmbeddingVariableForL2FeatureEvictionLevelDB(self):
+    print("testEmbeddingVariableForL2FeatureEvictionLevelDB")
     checkpoint_directory = self.get_temp_dir()
     db_directory = self.get_temp_dir()
     evict = variables.L2WeightEvict(l2_weight_threshold=0.9)
-    storage_option = variables.StorageOption(storage_type=config_pb2.StorageType.DRAM)
+    storage_option = variables.StorageOption(storage_type=config_pb2.StorageType.LEVELDB,
+                                             storage_path=db_directory)
     var = variable_scope.get_embedding_variable("var_1",
             embedding_dim = 3,
             initializer=init_ops.ones_initializer(dtypes.float32),

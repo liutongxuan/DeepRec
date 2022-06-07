@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "tensorflow/core/framework/typed_allocator.h"
+#include "leveldb/db.h"
+#include "leveldb/comparator.h"
 
 namespace tensorflow {
 

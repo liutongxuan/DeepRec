@@ -879,8 +879,7 @@ class KvResourceExportOp : public OpKernel {
     std::vector<TValue *> tot_valueptr_list;
     std::vector<int64> tot_version_list;
     std::vector<int64> tot_freq_list;
-    embedding::Iterator* it = nullptr;
-    int64 total_size = ev->GetSnapshot(&tot_key_list, &tot_valueptr_list, &tot_version_list, &tot_freq_list, &it);
+    int64 total_size = ev->GetSnapshot(&tot_key_list, &tot_valueptr_list, &tot_version_list, &tot_freq_list);
 
     // Create an output tensor
     Tensor *keys_output_tensor = NULL;
