@@ -199,11 +199,8 @@ class ValuePtr {
 
     if (!metadata.test(emb_index)) {
       while(flag_.test_and_set(std::memory_order_acquire));
-      metadata = meta->GetColumnBitset();
-      if (metadata.test(emb_index)){
-        flag_.clear(std::memory_order_release);
+      if (metadata.test(emb_index))
         return ((V**)((int64*)ptr_ + (unsigned int)meta->header_size))[emb_index];
-      }
       embnum++ ;
       int64 alloc_value_len = value_len;
       V* tensor_val = (V*)allocator->AllocateRaw(0/*alignemnt unused*/, sizeof(V) * alloc_value_len);
