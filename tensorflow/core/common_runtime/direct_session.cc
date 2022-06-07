@@ -400,7 +400,6 @@ DirectSession::DirectSession(const SessionOptions& options,
          env_num_threads < 0)) {
       run_in_caller_thread_ = true;
     }
-    MemoryPlannerFactory::GetMemoryPlanner()->SetThreadPool(GlobalThreadPool(options));
   }
 
   // Select which executor to use
