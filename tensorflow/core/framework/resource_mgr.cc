@@ -123,6 +123,7 @@ ResourceMgr::ResourceMgr(const string& default_container)
 ResourceMgr::~ResourceMgr() { Clear(); }
 
 void ResourceMgr::Clear() {
+  LOG(INFO) << "ResourceMgr, DebugString:" << DebugString();
   // We do the deallocation outside of the lock to avoid a potential deadlock
   // in case any of the destructors access the resource manager.
   std::unordered_map<string, Container*> tmp_containers;

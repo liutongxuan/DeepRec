@@ -319,6 +319,7 @@ class EmbeddingVar : public ResourceBase {
     std::vector<K> key_list;
     std::vector<ValuePtr<V>* > value_ptr_list;
     kv_->GetSnapshot(&key_list, &value_ptr_list);
+    LOG(INFO) << "EmbeddingVar destroy, value_ptr, size:" << value_ptr_list.size();
     for (auto value_ptr : value_ptr_list) {
       value_ptr->Destroy(alloc_, value_len);
       delete value_ptr;
@@ -437,6 +438,7 @@ class EmbeddingVar : public ResourceBase {
   std::string db_name_;
 
   ~EmbeddingVar() override {
+    LOG(INFO) << "EmbeddingVar destructor, name:" << name_;
     if (emb_config_.is_primary()) {
       if (LayoutType::LEVELDB == emb_config_.get_layout_type()) {
         delete level_db_;
@@ -444,6 +446,7 @@ class EmbeddingVar : public ResourceBase {
         int64 undeleted_dirs = 0;
         TF_CHECK_OK(Env::Default()->DeleteRecursively(db_name_, &undeleted_files, &undeleted_dirs));
       }
+      LOG(INFO) << "EmbeddingVar destructor, name:" << name_ << ", is primary.";
       Destroy(value_len_);
       delete kv_;
     }
