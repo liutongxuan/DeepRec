@@ -741,10 +741,16 @@ struct RestoreOp {
   bool should_run_in_pool(BundleReader* reader) const {
     TensorShape restored_full_shape;
 
+    LOG(INFO) << "tensor name:" << tensor_name << ", should_run_in_pool enter";
+
     // Ignore status here; we'll catch the error later.
     if (!reader->LookupTensorShape(tensor_name, &restored_full_shape).ok()) {
       return false;
     }
+    
+    LOG(INFO) << "tensor name:" << tensor_name << ", should_run_in_pool:"
+        << (restored_full_shape.num_elements() > kLargeShapeThreshold)
+        << ", num_elements:" << restored_full_shape.num_elements();
 
     return restored_full_shape.num_elements() > kLargeShapeThreshold;
   }
@@ -869,6 +875,7 @@ Status RestoreTensorsV2(OpKernelContext* context, const Tensor& prefix,
     // we don't have any expensive operations.
     std::unique_ptr<thread::ThreadPool> reader_pool;
     if (!pool_restore_ops.empty()) {
+      LOG(INFO) << "Create restore threadpool";
       reader_pool.reset(
           new thread::ThreadPool(Env::Default(), "restore_tensors", 8));
       for (auto& op : pool_restore_ops) {

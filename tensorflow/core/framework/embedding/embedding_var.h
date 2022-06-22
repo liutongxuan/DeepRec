@@ -61,7 +61,9 @@ class EmbeddingVar : public ResourceBase {
       default_value_(nullptr),
       value_len_(0),
       alloc_(nullptr),
-      emb_config_(emb_cfg) {}
+      emb_config_(emb_cfg) {
+    LOG(INFO) << "EmbeddingVar constructor, name:" << name << ", this:" << this;
+  }
 
   Status Init(const Tensor& default_tensor, int64 default_value_dim) {
     filter_ = FilterFactory::CreateFilter<K, V, EmbeddingVar<K, V>>(emb_config_, this, storage_manager_);
