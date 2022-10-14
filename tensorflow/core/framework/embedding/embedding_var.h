@@ -143,10 +143,8 @@ class EmbeddingVar : public ResourceBase {
   }
 
   Status LookupOrCreateKey(K key, ValuePtr<V>** value_ptr) {
-    Status s = storage_manager_->GetOrCreate(key, value_ptr,
+    return storage_manager_->GetOrCreate(key, value_ptr,
         emb_config_.total_num(storage_manager_->GetAllocLen()));
-    TF_CHECK_OK(s);
-    return s;
   }
 
   void UpdateVersion(ValuePtr<V>* value_ptr, int64 gs) {
@@ -192,13 +190,20 @@ class EmbeddingVar : public ResourceBase {
         default_value_no_permission_);
   }
 
-  void LookupOrCreate(K key, V* val, V* default_v, int count = 1)  {
+  void LookupOrCreate(K key, V* val, V* default_v, int freq_count = 1)  {
     const V* default_value_ptr =
       (default_v == nullptr) ? default_value_ : default_v;
     ValuePtr<V>* value_ptr = nullptr;
-    filter_->LookupOrCreate(key, val, default_value_ptr, &value_ptr, count,
-                            default_value_no_permission_);
-    add_freq_fn_(value_ptr, count, emb_config_.filter_freq);
+    filter_->LookupOrCreate(key, val, default_value_ptr, &value_ptr,
+        frea_count, default_value_no_permission_);
+    add_freq_fn_(value_ptr, freq_count, emb_config_.filter_freq);
+  }
+
+  void BatchLookupOrCreate(K* keys, V** vals, V** default_v,
+      int* freq_count, int64 size) {
+    // Lookup value
+    // Lookup key without value (filter)
+    // Insert Value
   }
 
   void LookupWithFreqBatch(K* keys, bool *init_flags, bool *copyback_flags,

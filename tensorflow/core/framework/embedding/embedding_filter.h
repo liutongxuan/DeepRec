@@ -36,12 +36,16 @@ struct RestoreBuffer {
   }
 };
 
-
 template<typename K, typename V, typename EV>
 class EmbeddingFilter {
  public:
   virtual void LookupOrCreate(K key, V* val, const V* default_value_ptr,
-    ValuePtr<V>** value_ptr, int count, const V* default_value_no_permission) = 0;
+      ValuePtr<V>** value_ptr, int count,
+      const V* default_value_no_permission) = 0;
+
+  virtual void BatchLookupOrCreate(K* key, V** val,
+      const V** default_value_ptr, ValuePtr<V>** value_ptr, int* count,
+      int64 size, const V** default_value_no_permission) = 0;
 
   virtual void Lookup(EV* ev, K key, V* val, const V* default_value_ptr,
     const V* default_value_no_permission) {

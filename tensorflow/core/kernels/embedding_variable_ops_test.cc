@@ -1596,6 +1596,49 @@ TEST(KVInterfaceTest, TestSSDKVCompaction) {
   }
 }
 
+TEST(EmbeddingVarTest, TestCPUBasicInsert) {
+  constexpr int64 dimension = 16;
+  Tensor default_value(DT_FLOAT, TensorShape({dimension}));
+  test::FillValues<float>(&default_value, std::vector<float>(dimension, 1.0));
+  auto storage_manager = new embedding::StorageManager<int64, float>(
+      "embedding_var", embedding::StorageConfig());
+  TF_CHECK_OK(storage_manager->Init());
+  auto var = new TestableEmbeddingVar<int64, float>("embedding_var",
+      storage_manager, EmbeddingConfig());
+  Status s = var->Init(default_value, 1);
+  ASSERT_EQ(Status::OK(), s);
+
+  constexpr int64 loop_size_1M = 100000;
+  constexpr int64 total_size = dimension * sizeof(float) * loop_size_1M;
+  constexpr int64 val_size = dimension * sizeof(float);
+  // Allocate value
+  timespec start;
+  timespec end;
+  float* val = new float[total_size];
+  memset(val, 0, total_size);
+  // Insert value
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  for (int64 i = 0; i < loop_size_1M; ++i) {
+    var->LookupOrCreate(i, val + i * val_size, nullptr);
+  }
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  LOG(INFO) << "Insert time: "
+            << ((double)(end.tv_sec - start.tv_sec) *
+                1000000000 + end.tv_nsec - start.tv_nsec) / 1000000
+            << "ms";
+
+  // Lookup value
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  for (int64 i = 0; i < loop_size; ++i) {
+    var->LookupOrCreate(i, val + i * val_size, nullptr);
+  }
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  LOG(INFO) << "Update time: "
+            << ((double)(end.tv_sec - start.tv_sec) *
+                1000000000 + end.tv_nsec - start.tv_nsec) / 1000000
+            << "ms";
+}
+
 } // namespace
 } // namespace embedding
 } // namespace tensorflow
