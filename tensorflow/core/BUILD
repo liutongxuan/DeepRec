@@ -6042,15 +6042,17 @@ cuda_library(
     name = "embedding_gpu",
     hdrs = [
         "framework/embedding/batch.h",
-        "framework/embedding/gpu_hash_table.h"
-    ],
+    ] + select({"//tensorflow:with_gpu_ev_support":
+        ["framework/embedding/gpu_hash_table.h"],
+        "//conditions:default": []}),
     srcs = FRAMEWORK_INTERNAL_PRIVATE_HEADERS + [
         "framework/embedding/batch.cu.cc",
-        "framework/embedding/gpu_hash_table.cu.cc"
-    ],
+    ] + select({"//tensorflow:with_gpu_ev_support":
+        ["framework/embedding/gpu_hash_table.cu.cc"],
+        "//conditions:default": []}),
     copts = ["-g"] + if_cuda(["-DNV_CUDNN_DISABLE_EXCEPTION"])
         + if_cuda(["-DGOOGLE_CUDA=1"]) +
-	select({
+        select({
         "//conditions:default": [],
         "@local_config_cuda//cuda:using_nvcc": [
             "-nvcc_options=relaxed-constexpr",
@@ -6064,9 +6066,11 @@ cuda_library(
     visibility = ["//visibility:public"],
     alwayslink = 1,
     deps = ["//tensorflow/stream_executor/cuda:cudart_stub",
-	    ":stream_executor",
+            ":stream_executor",
             "@sparsehash_c11//:dense_hash_map",
-            "@libcuckoo//:libcuckoo",
             "@com_github_google_leveldb//:leveldb",
-            "@cuCollections//:cuco_hash_table"],
+            "@cuCollections//:cuco_hash_table"] +
+            select({"//tensorflow:with_gpu_ev_support":
+              ["@libcuckoo//:libcuckoo"],
+              "//conditions:default": []}),
 )

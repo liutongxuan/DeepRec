@@ -30,7 +30,9 @@ limitations under the License.
 #include "tensorflow/core/framework/embedding/cache.h"
 #include "tensorflow/core/framework/embedding/value_ptr.h"
 #include "tensorflow/core/framework/embedding/filter_factory.h"
+#if TENSORFLOW_USE_GPU_EV
 #include "tensorflow/core/framework/embedding/gpu_hash_map_kv.h"
+#endif
 #include "tensorflow/core/framework/embedding/embedding_config.h"
 #include "tensorflow/core/framework/embedding/storage_manager.h"
 #include "tensorflow/core/framework/typed_allocator.h"
@@ -603,6 +605,7 @@ class EmbeddingVar : public ResourceBase {
 }  // namespace tensorflow
 
 #if GOOGLE_CUDA
+#if TENSORFLOW_USE_GPU_EV
 namespace tensorflow {
 
 template <class K, class V>
@@ -759,7 +762,7 @@ class EmbeddingVarGPU : public ResourceBase {
 };
 
 }  // namespace tensorflow
-
+#endif  // TENSORFLOW_USE_GPU_EV
 #endif  // GOOGLE_CUDA
 
 #endif  // TENSORFLOW_CORE_FRAMEWORK_EMBEDDING_EMBEDDING_VAR_H_
