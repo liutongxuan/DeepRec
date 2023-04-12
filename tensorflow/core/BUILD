@@ -977,6 +977,7 @@ tf_cuda_library(
         "util/mkl_threadpool.h",
         "util/mkl_util.h",
     ]),
+    copts = tf_copts() + ["-g"],
     visibility = ["//visibility:public"],
     deps = [
         ":framework_internal",
@@ -2954,6 +2955,7 @@ tf_cuda_library(
             "@com_google_protobuf//:protobuf_headers",
         ],
     ),
+    copts = tf_copts() + ["-g"],
     alwayslink = 1,
 )
 
@@ -3033,7 +3035,7 @@ tf_cuda_library(
         ],
     }),
     hdrs = FRAMEWORK_INTERNAL_PUBLIC_HEADERS,
-    copts = tf_copts(),
+    copts = tf_copts() + ["-g"],
     linkopts = select({
         "//tensorflow:freebsd": ["-lm"],
         "//tensorflow:windows": [],
