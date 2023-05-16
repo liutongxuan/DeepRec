@@ -25,10 +25,17 @@ limitations under the License.
 #include "tensorflow/core/util/gpu_kernel_helper.h"
 
 #if GOOGLE_CUDA
+#if CUDA_VERSION < 11000
+#include "thrust/system/cuda/detail/cub/device/device_radix_sort.cuh"
+#include "thrust/system/cuda/detail/cub/device/device_scan.cuh"
+#include "thrust/system/cuda/detail/cub/device/device_segmented_reduce.cuh"
+#include "thrust/system/cuda/detail/cub/device/device_select.cuh"
+#else
 #include "cub/device/device_radix_sort.cuh"
 #include "cub/device/device_scan.cuh"
 #include "cub/device/device_segmented_reduce.cuh"
 #include "cub/device/device_select.cuh"
+#endif
 namespace gpuprim = ::cub;
 #elif TENSORFLOW_USE_ROCM
 #include "rocm/include/hipcub/hipcub.hpp"

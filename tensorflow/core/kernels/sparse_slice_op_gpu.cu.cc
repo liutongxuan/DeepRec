@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 #if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
+#if CUDA_VERSION >= 11000
 
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
@@ -32,8 +33,13 @@ limitations under the License.
 
 #if GOOGLE_CUDA
 #include "tensorflow/stream_executor/cuda/cuda_activation.h"
+#if CUDA_VERSION < 11000
+#include "thrust/system/cuda/detail/cub/iterator/counting_input_iterator.cuh"
+#include "thrust/system/cuda/detail/cub/iterator/transform_input_iterator.cuh"
+#else
 #include "cub/iterator/counting_input_iterator.cuh"
 #include "cub/iterator/transform_input_iterator.cuh"
+#endif
 using stream_executor::cuda::ScopedActivateExecutorContext;
 namespace gpuprim = ::cub;
 #elif TENSORFLOW_USE_ROCM
@@ -263,4 +269,5 @@ TF_CALL_POD_TYPES(DEFINE_SPARSE_SLICE);
 
 }  // End of namespace tensorflow
 
+#endif  // CUDA_VERSION >= 11000
 #endif  // End of GOOGLE_CUDA || TENSORFLOW_USE_ROCM

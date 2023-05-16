@@ -1,17 +1,17 @@
-From 874376f7e6b597bc288d3b945e706fd83a7033bf Mon Sep 17 00:00:00 2001
-From: Hongxiao Bai <hongxiaob@nvidia.com>
-Date: Thu, 20 Jan 2022 21:33:03 +0800
-Subject: [PATCH] cuco_modification_for_deeprec
+From 391bb5a9fe167e033a8805b36ae9da4c69a145ab Mon Sep 17 00:00:00 2001
+From: Tongxuan Liu <tongxuan.ltx@alibaba-inc.com>
+Date: Tue, 16 May 2023 18:46:38 +0800
+Subject: [PATCH] [PATCH] cuco_modification_for_deeprec
 
 ---
  include/cuco/detail/dynamic_map.inl         |  47 +++++++-
  include/cuco/detail/dynamic_map_kernels.cuh |  71 +++++++++++-
  include/cuco/detail/pair.cuh                |  14 +++
  include/cuco/detail/static_map.inl          | 115 ++++++++++++++++----
- include/cuco/dynamic_map.cuh                |  49 ++++++++-
- include/cuco/static_map.cuh                 |  51 ++++++++-
+ include/cuco/dynamic_map.cuh                |  58 +++++++++-
+ include/cuco/static_map.cuh                 |  56 +++++++++-
  include/cuco/traits.hpp                     |   1 +
- 7 files changed, 317 insertions(+), 31 deletions(-)
+ 7 files changed, 329 insertions(+), 33 deletions(-)
 
 diff --git a/include/cuco/detail/dynamic_map.inl b/include/cuco/detail/dynamic_map.inl
 index 57950ea..78543c5 100644
@@ -340,10 +340,28 @@ index 1719970..febc1fb 100644
  template <typename Hash, typename KeyEqual>
  __device__ bool static_map<Key, Value, Scope, Allocator>::device_view::contains(
 diff --git a/include/cuco/dynamic_map.cuh b/include/cuco/dynamic_map.cuh
-index 2e57ac6..64f4d3f 100644
+index 2e57ac6..a803b2a 100644
 --- a/include/cuco/dynamic_map.cuh
 +++ b/include/cuco/dynamic_map.cuh
-@@ -96,8 +96,8 @@ class dynamic_map {
+@@ -18,11 +18,16 @@
+ 
+ #include <cooperative_groups.h>
+ #include <thrust/device_vector.h>
++#if CUDA_VERSION < 11000
++#include <thrust/system/cuda/detail/cub/cub.cuh>
++#include <cuda/std/std/atomic>
++#else
+ #include <cub/cub.cuh>
++#include <cuda/std/atomic>
++#endif
+ #include <cuco/detail/dynamic_map_kernels.cuh>
+ #include <cuco/detail/error.hpp>
+ #include <cuco/static_map.cuh>
+-#include <cuda/std/atomic>
+ 
+ namespace cuco {
+ 
+@@ -96,8 +101,8 @@ class dynamic_map {
    using key_type                  = Key;
    using mapped_type               = Value;
    using atomic_ctr_type           = cuda::atomic<std::size_t, Scope>;
@@ -354,7 +372,7 @@ index 2e57ac6..64f4d3f 100644
    dynamic_map(dynamic_map const&) = delete;
    dynamic_map(dynamic_map&&)      = delete;
    dynamic_map& operator=(dynamic_map const&) = delete;
-@@ -219,6 +219,48 @@ class dynamic_map {
+@@ -219,6 +224,48 @@ class dynamic_map {
                  Hash hash          = Hash{},
                  KeyEqual key_equal = KeyEqual{});
  
@@ -403,7 +421,7 @@ index 2e57ac6..64f4d3f 100644
    /**
     * @brief Gets the current number of elements in the map
     *
-@@ -241,13 +283,14 @@ class dynamic_map {
+@@ -241,13 +288,14 @@ class dynamic_map {
    float get_load_factor() const noexcept { return static_cast<float>(size_) / capacity_; }
  
   private:
@@ -419,11 +437,32 @@ index 2e57ac6..64f4d3f 100644
      submaps_;                                      ///< vector of pointers to each submap
    thrust::device_vector<view_type> submap_views_;  ///< vector of device views for each submap
    thrust::device_vector<mutable_view_type>
+@@ -258,4 +306,4 @@ class dynamic_map {
+ };
+ }  // namespace cuco
+ 
+-#include <cuco/detail/dynamic_map.inl>
+\ No newline at end of file
++#include <cuco/detail/dynamic_map.inl>
 diff --git a/include/cuco/static_map.cuh b/include/cuco/static_map.cuh
-index 321b1f3..cc7601b 100644
+index 321b1f3..69ad5d8 100644
 --- a/include/cuco/static_map.cuh
 +++ b/include/cuco/static_map.cuh
-@@ -123,10 +123,10 @@ class static_map {
+@@ -19,8 +19,13 @@
+ #include <cooperative_groups.h>
+ #include <thrust/distance.h>
+ #include <thrust/functional.h>
++#if CUDA_VERSION < 11000
++#include <thrust/system/cuda/detail/cub/cub.cuh>
++#include <cuda/std/std/atomic>
++#else
+ #include <cub/cub.cuh>
+ #include <cuda/std/atomic>
++#endif
+ #include <memory>
+ 
+ #include <cuco/allocator.hpp>
+@@ -123,10 +128,10 @@ class static_map {
      "Key type must have unique object representations or have been explicitly declared as safe for "
      "bitwise comparison via specialization of cuco::is_bitwise_comparable_v<Key>.");
  
@@ -438,7 +477,7 @@ index 321b1f3..cc7601b 100644
  
    friend class dynamic_map<Key, Value, Scope, Allocator>;
  
-@@ -417,6 +417,18 @@ class static_map {
+@@ -417,6 +422,18 @@ class static_map {
        return &slots_[(hash(k) + g.thread_rank()) % capacity_];
      }
  
@@ -457,7 +496,7 @@ index 321b1f3..cc7601b 100644
      /**
       * @brief Given a slot `s`, returns the next slot.
       *
-@@ -775,6 +787,27 @@ class static_map {
+@@ -775,6 +792,27 @@ class static_map {
                             value_type const& insert_pair,
                             Hash hash          = Hash{},
                             KeyEqual key_equal = KeyEqual{}) noexcept;
@@ -485,7 +524,7 @@ index 321b1f3..cc7601b 100644
    };  // class device mutable view
  
    /**
-@@ -990,6 +1023,16 @@ class static_map {
+@@ -990,6 +1028,16 @@ class static_map {
      __device__ const_iterator
      find(CG g, Key const& k, Hash hash = Hash{}, KeyEqual key_equal = KeyEqual{}) const noexcept;
  
@@ -515,5 +554,5 @@ index 445a40d..07fe954 100644
  namespace cuco {
  
 -- 
-2.33.0
+2.37.1
 

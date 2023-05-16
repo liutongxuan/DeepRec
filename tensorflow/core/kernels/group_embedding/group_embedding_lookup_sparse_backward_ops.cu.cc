@@ -15,6 +15,7 @@ limitations under the License.
 #define EIGEN_USE_THREADS
 
 #if GOOGLE_CUDA
+#if CUDA_VERSION >= 11000
 #define EIGEN_USE_GPU
 
 #include "tensorflow/core/framework/bounds_check.h"
@@ -158,5 +159,5 @@ REGISTER_GPU_KERNELS(int32, int32_t, float);
 #undef REGISTER_GPU_KERNELS
 
 }  // namespace tensorflow
-
+#endif  // CUDA_VERSION >= 11000
 #endif  // GOOGLE_CUDA

@@ -15,6 +15,7 @@
  */
 
 #if GOOGLE_CUDA
+#if CUDA_VERSION >= 11000
 
 #define EIGEN_USE_GPU
 
@@ -448,5 +449,5 @@ TF_CALL_REAL_NUMBER_TYPES(REGISTER_ALL_TYPE)
 #undef REGISTER_ALL_TYPE
 
 }  // namespace tensorflow
-
+#endif  // CUDA_VERSION >= 11000
 #endif  // GOOGLE_CUDA

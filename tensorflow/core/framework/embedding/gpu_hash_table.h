@@ -16,7 +16,11 @@ limitations under the License.
 #define TENSORFLOW_CORE_FRAMEWORK_EMBEDDING_GPU_HASH_TABLE_H_
 
 #if GOOGLE_CUDA
+#if CUDA_VERSION < 11000
+#include <cuda/std/std/atomic>
+#else
 #include <cuda/std/atomic>
+#endif
 #include "tensorflow/core/framework/typed_allocator.h"
 #include "tensorflow/core/lib/core/status.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
